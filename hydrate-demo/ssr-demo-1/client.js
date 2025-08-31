@@ -79,60 +79,82 @@ document.addEventListener('DOMContentLoaded', () => {
  * 水合函数 - 将交互功能绑定到服务端渲染的DOM上
  */
 function hydrate(element, component) {
-  console.log('开始水合元素:', element.tagName);
+  console.log('开始水合元素:', element.tagName, 'ID:', element.id, '类名:', element.className);
+  console.log('组件实例类型:', typeof component);
   
   // 递归处理所有子元素
   Array.from(element.children).forEach(child => hydrate(child, component));
   
   // 处理当前元素的事件
   const dataAttributes = element.dataset;
+  console.log('元素数据属性:', dataAttributes);
   
-  // 检查所有以event-开头的数据属性
+  // 检查所有以event开头的数据属性（处理dataset自动转换的camelCase）
   Object.keys(dataAttributes).forEach(key => {
     if (key.startsWith('event')) {
-      const eventName = key.replace('event', '').toLowerCase();
+      // 处理camelCase到kebab-case的转换
+      let eventName = key.replace('event', '');
+      // 添加连字符（用于从camelCase到kebab-case）
+      eventName = eventName.replace(/([A-Z])/g, '-$1').toLowerCase();
+      eventName = eventName.charAt(0) === '-' ? eventName.substr(1) : eventName;
       const handlerName = dataAttributes[key];
+      
+      console.log(`找到事件属性: ${key}，事件名: ${eventName}，处理函数名: ${handlerName}`);
       
       // 查找对应的处理函数
       const handler = findEventHandler(handlerName, component);
       
       if (handler) {
+        console.log(`✓ 找到处理函数: ${handlerName}`);
         console.log(`为元素 ${element.tagName}#${element.id || ''} 添加事件监听: ${eventName}`);
         
         // 添加事件监听器
-        element.addEventListener(eventName, handler);
+        element.addEventListener(eventName, function(event) {
+          console.log(`事件触发: ${eventName}，处理函数: ${handlerName}`);
+          handler(event);
+        });
         
         // 移除数据属性，避免重复绑定
         delete element.dataset[key];
       } else {
-        console.warn(`未找到事件处理函数: ${handlerName}`);
+        console.warn(`✗ 未找到事件处理函数: ${handlerName}`);
+        console.log('组件实例:', component);
+        console.log('全局事件处理器:', window.__EVENT_HANDLERS__);
+        console.log('全局作用域处理器:', window[handlerName]);
       }
     }
   });
   
   // 标记元素已水合
   element.setAttribute('data-hydrated', 'true');
+  console.log('元素水合完成:', element.tagName);
 }
 
 /**
  * 查找事件处理函数
  */
 function findEventHandler(handlerName, component) {
+  console.log(`查找处理函数: ${handlerName}`);
+  
   // 首先在组件实例中查找
   if (component && typeof component[handlerName] === 'function') {
+    console.log(`在组件实例中找到处理函数: ${handlerName}`);
     return component[handlerName].bind(component);
   }
   
   // 然后在全局事件处理函数集合中查找
   if (window.__EVENT_HANDLERS__ && window.__EVENT_HANDLERS__[handlerName]) {
+    console.log(`在全局事件处理函数集合中找到处理函数: ${handlerName}`);
     return window.__EVENT_HANDLERS__[handlerName];
   }
   
   // 最后在全局作用域中查找
   if (window[handlerName] && typeof window[handlerName] === 'function') {
+    console.log(`在全局作用域中找到处理函数: ${handlerName}`);
     return window[handlerName];
   }
   
+  console.log(`未找到处理函数: ${handlerName}`);
   return null;
 }
 

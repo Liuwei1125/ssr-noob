@@ -274,14 +274,41 @@
     </div>
     
     <!-- 服务端渲染内容将被注入到这里 -->
-    <!-- APP_CONTENT -->
+    
+    <div id="app" class="app-container">
+      <header class="app-header">
+        <h1>SSR + 客户端水合演示</h1>
+        <p>页面渲染时间: 2025/9/1 00:19:02</p>
+      </header>
+      <main class="app-main">
+        <div class="status-info">
+          <p>渲染模式: 服务端</p>
+          <p>水合状态: 待水合</p>
+        </div>
+        <div class="counter-section">
+          <h2>计数器演示</h2>
+          <p class="counter-value">当前计数: 0</p>
+          <div class="button-group">
+            <button class="btn btn-primary" data-event-click="handleClick">增加计数</button>
+            <button class="btn btn-secondary" data-event-click="handleReset">重置计数</button>
+          </div>
+        </div>
+        <div class="message-section">
+          <h2>消息展示</h2>
+          <p class="message-text">欢迎使用SSR水合演示</p>
+          <button class="btn btn-info" data-event-click="handleToggleMessage">切换消息</button>
+        </div>
+      </main>
+      <footer class="app-footer">
+        <p>© 2023 SSR水合演示</p>
+      </footer>
+    </div>
+  
     
     <!-- 服务端数据将被注入到这里 -->
     <script>
         // 服务端渲染时注入的数据
-        // APP_PROPS
-        
-        // 客户端全局事件处理函数集合
+        window.__APP_PROPS__ = {"initialCount":0,"message":"欢迎使用SSR水合演示","serverRenderTime":"2025/9/1 00:19:02"};// 客户端全局事件处理函数集合
         window.__EVENT_HANDLERS__ = {
             handleClick: function() {
                 const app = window.__APP_INSTANCE__;
@@ -311,78 +338,21 @@
     
     <!-- 引入App组件 -->
     <script>
-        // 模拟ES模块加载App组件，提供完整的组件实现
+        // 模拟ES模块加载App组件
         (function() {
-            // 完整的App组件实现
-            class App {
-                constructor(props) {
-                    this.props = props || {};
-                    this.state = {
-                        count: props.initialCount || 0,
-                        message: props.message || '欢迎使用SSR水合演示',
-                        isClient: false
-                    };
-                    
-                    // 绑定事件处理函数
-                    this.handleClick = this.handleClick.bind(this);
-                    this.handleReset = this.handleReset.bind(this);
-                    this.handleToggleMessage = this.handleToggleMessage.bind(this);
-                }
-                
-                // 点击计数器按钮的处理函数
-                handleClick() {
-                    this.setState(prevState => ({
-                        count: prevState.count + 1
-                    }));
-                }
-                
-                // 重置计数器的处理函数
-                handleReset() {
-                    this.setState({ count: 0 });
-                }
-                
-                // 切换消息的处理函数
-                handleToggleMessage() {
-                    this.setState(prevState => ({
-                        message: prevState.message === '欢迎使用SSR水合演示' 
-                          ? '水合成功！组件现在可以交互了' 
-                          : '欢迎使用SSR水合演示'
-                    }));
-                }
-                
-                // 组件挂载后（客户端）调用
-                componentDidMount() {
-                    // 标记为客户端环境
-                    this.setState({ isClient: true });
-                }
-                
-                // 简单的setState实现，直接更新DOM
-                setState(newState) {
-                    // 处理函数形式的新状态
-                    if (typeof newState === 'function') {
-                        newState = newState(this.state);
-                    }
-                    
-                    // 更新状态
-                    this.state = { ...this.state, ...newState };
-                    
-                    // 直接更新DOM（简化实现）
-                    if (document.querySelector('.counter-value')) {
-                        document.querySelector('.counter-value').textContent = `当前计数: ${this.state.count}`;
-                    }
-                    
-                    if (document.querySelector('.message-text')) {
-                        document.querySelector('.message-text').textContent = this.state.message;
-                    }
-                    
-                    if (document.querySelector('.status-info p:first-child')) {
-                        document.querySelector('.status-info p:first-child').textContent = `渲染模式: ${this.state.isClient ? '客户端' : '服务端'}`;
-                    }
-                }
-            }
-            
+            // 由于浏览器不直接支持ES模块，这里模拟App组件的定义
+            // 实际水合时会使用从server.js传递过来的组件实例
             window.__APP_MODULE__ = {
-                App: App
+                App: class {
+                    constructor(props) {
+                        this.props = props || {};
+                        this.state = {
+                            count: props.initialCount || 0,
+                            message: props.message || '欢迎使用SSR水合演示',
+                            isClient: false
+                        };
+                    }
+                }
             };
         })();
     </script>
