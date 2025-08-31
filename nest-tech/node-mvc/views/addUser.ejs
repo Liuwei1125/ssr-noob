@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>添加新用户</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1 {
+      color: #333;
+    }
+    form {
+      background-color: #f9f9f9;
+      padding: 20px;
+      border-radius: 5px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input[type="text"],
+    input[type="number"],
+    input[type="email"] {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    .btn {
+      display: inline-block;
+      padding: 10px 15px;
+      border-radius: 4px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    .btn-submit {
+      background-color: #4CAF50;
+      color: white;
+    }
+    .btn-submit:hover {
+      background-color: #45a049;
+    }
+    .btn-back {
+      background-color: #ccc;
+      color: #333;
+    }
+    .btn-back:hover {
+      background-color: #999;
+    }
+  </style>
+</head>
+<body>
+  <h1>添加新用户</h1>
+  <form action="/users/add" method="POST">
+    <div class="form-group">
+      <label for="name">姓名:</label>
+      <input type="text" id="name" name="name" required>
+    </div>
+    <div class="form-group">
+      <label for="age">年龄:</label>
+      <input type="number" id="age" name="age" min="1" required>
+    </div>
+    <div class="form-group">
+      <label for="email">邮箱:</label>
+      <input type="email" id="email" name="email" required>
+    </div>
+    <button type="submit" class="btn btn-submit">添加</button>
+    <a href="/users" class="btn btn-back">返回列表</a>
+  </form>
+</body>
+</html>

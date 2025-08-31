@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSR + 客户端水合演示</title>
+    <style>
+        /* 基础样式重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        /* App容器样式 */
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            background: white;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* 头部样式 */
+        .app-header {
+            text-align: center;
+            padding: 40px 0;
+            border-bottom: 2px solid #eee;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+            margin: -20px -20px 30px -20px;
+            padding: 40px 20px;
+        }
+        
+        .app-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .app-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        /* 主内容样式 */
+        .app-main {
+            padding: 0 20px;
+        }
+        
+        /* 状态信息样式 */
+        .status-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .status-info p {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            color: #666;
+        }
+        
+        /* 计数器部分样式 */
+        .counter-section {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e9ecef;
+        }
+        
+        .counter-section h2 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #495057;
+            text-align: center;
+        }
+        
+        .counter-value {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 30px 0;
+            color: #007bff;
+        }
+        
+        /* 按钮组样式 */
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        /* 按钮样式 */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            outline: none;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .btn-info:hover {
+            background: #138496;
+        }
+        
+        /* 消息部分样式 */
+        .message-section {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e9ecef;
+        }
+        
+        .message-section h2 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #495057;
+            text-align: center;
+        }
+        
+        .message-text {
+            text-align: center;
+            font-size: 1.2rem;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            margin: 20px 0;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #e9ecef;
+        }
+        
+        /* 底部样式 */
+        .app-footer {
+            text-align: center;
+            padding: 30px 0;
+            margin-top: 40px;
+            border-top: 2px solid #eee;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        /* 演示信息样式 */
+        .demo-info {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .app-header h1 {
+                font-size: 2rem;
+            }
+            
+            .counter-value {
+                font-size: 2rem;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 200px;
+            }
+        }
+        
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .counter-section, .message-section {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        /* 水合状态指示器样式 */
+        #hydration-indicator {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            padding: 8px 12px;
+            background-color: #333;
+            color: #fff;
+            border-radius: 4px;
+            font-size: 14px;
+            z-index: 9999;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <!-- 演示信息提示 -->
+    <div class="demo-info">
+        <strong>SSR水合演示说明：</strong>
+        本页面展示了服务端渲染(SSR)和客户端水合的完整过程。服务端首先渲染DOM结构，然后客户端脚本接管并添加交互功能。
+        打开浏览器控制台可以查看水合过程的详细日志。
+    </div>
+    
+    <!-- 服务端渲染内容将被注入到这里 -->
+    
+    <div id="app" class="app-container">
+      <header class="app-header">
+        <h1>SSR + 客户端水合演示</h1>
+        <p>页面渲染时间: 2025/9/1 00:08:56</p>
+      </header>
+      <main class="app-main">
+        <div class="status-info">
+          <p>渲染模式: 服务端</p>
+          <p>水合状态: 待水合</p>
+        </div>
+        <div class="counter-section">
+          <h2>计数器演示</h2>
+          <p class="counter-value">当前计数: 0</p>
+          <div class="button-group">
+            <button class="btn btn-primary" data-event-click="handleClick">增加计数</button>
+            <button class="btn btn-secondary" data-event-click="handleReset">重置计数</button>
+          </div>
+        </div>
+        <div class="message-section">
+          <h2>消息展示</h2>
+          <p class="message-text">欢迎使用SSR水合演示</p>
+          <button class="btn btn-info" data-event-click="handleToggleMessage">切换消息</button>
+        </div>
+      </main>
+      <footer class="app-footer">
+        <p>© 2023 SSR水合演示</p>
+      </footer>
+    </div>
+  
+    
+    <!-- 服务端数据将被注入到这里 -->
+    <script>
+        // 服务端渲染时注入的数据
+        window.__APP_PROPS__ = {"initialCount":0,"message":"欢迎使用SSR水合演示","serverRenderTime":"2025/9/1 00:08:56"};// 客户端全局事件处理函数集合
+        window.__EVENT_HANDLERS__ = {
+            handleClick: function() {
+                const app = window.__APP_INSTANCE__;
+                if (app && app.handleClick) {
+                    app.handleClick();
+                }
+            },
+            
+            handleReset: function() {
+                const app = window.__APP_INSTANCE__;
+                if (app && app.handleReset) {
+                    app.handleReset();
+                }
+            },
+            
+            handleToggleMessage: function() {
+                const app = window.__APP_INSTANCE__;
+                if (app && app.handleToggleMessage) {
+                    app.handleToggleMessage();
+                }
+            }
+        };
+    </script>
+    
+    <!-- 引入虚拟DOM工具库 -->
+    <script type="module" src="vdom.js"></script>
+    
+    <!-- 引入App组件 -->
+    <script>
+        // 模拟ES模块加载App组件
+        (function() {
+            // 由于浏览器不直接支持ES模块，这里模拟App组件的定义
+            // 实际水合时会使用从server.js传递过来的组件实例
+            window.__APP_MODULE__ = {
+                App: class {
+                    constructor(props) {
+                        this.props = props || {};
+                        this.state = {
+                            count: props.initialCount || 0,
+                            message: props.message || '欢迎使用SSR水合演示',
+                            isClient: false
+                        };
+                    }
+                }
+            };
+        })();
+    </script>
+    
+    <!-- 引入客户端水合脚本 -->
+    <script src="client.js"></script>
+</body>
+</html>

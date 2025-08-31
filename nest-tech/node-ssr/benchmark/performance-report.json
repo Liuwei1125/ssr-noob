@@ -1,0 +1,29 @@
+{
+  "timestamp": "2025-08-30T08:45:00.969Z",
+  "results": [
+    {
+      "responseType": "pipe",
+      "avgResponseTime": 0.13333333333333333,
+      "avgMemoryUsage": 0.025520833333333333,
+      "htmlSize": 12.181640625
+    },
+    {
+      "responseType": "end",
+      "avgResponseTime": 0.1,
+      "avgMemoryUsage": 0.0010416666666666667,
+      "htmlSize": 12.181640625
+    },
+    {
+      "responseType": "pipe",
+      "avgResponseTime": 0.13333333333333333,
+      "avgMemoryUsage": 0.07864583333333333,
+      "htmlSize": 106.017578125
+    },
+    {
+      "responseType": "end",
+      "avgResponseTime": 0.4666666666666667,
+      "avgMemoryUsage": 0.0005208333333333333,
+      "htmlSize": 106.017578125
+    }
+  ]
+}

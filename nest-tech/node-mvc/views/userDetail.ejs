@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>用户详情 - <%= user.name %></title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1 {
+      color: #333;
+    }
+    .user-info {
+      background-color: #f9f9f9;
+      padding: 20px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+    .info-item {
+      margin-bottom: 10px;
+    }
+    .info-label {
+      font-weight: bold;
+      min-width: 80px;
+      display: inline-block;
+    }
+    a {
+      color: #0066cc;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .btn {
+      display: inline-block;
+      padding: 8px 15px;
+      border-radius: 4px;
+      text-decoration: none;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+    .btn-edit {
+      background-color: #2196F3;
+      color: white;
+    }
+    .btn-edit:hover {
+      background-color: #0b7dda;
+      text-decoration: none;
+    }
+    .btn-back {
+      background-color: #ccc;
+      color: #333;
+    }
+    .btn-back:hover {
+      background-color: #999;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>用户详情</h1>
+  <div class="user-info">
+    <div class="info-item">
+      <span class="info-label">ID:</span>
+      <span class="info-value"><%= user.id %></span>
+    </div>
+    <div class="info-item">
+      <span class="info-label">姓名:</span>
+      <span class="info-value"><%= user.name %></span>
+    </div>
+    <div class="info-item">
+      <span class="info-label">年龄:</span>
+      <span class="info-value"><%= user.age %></span>
+    </div>
+    <div class="info-item">
+      <span class="info-label">邮箱:</span>
+      <span class="info-value"><%= user.email %></span>
+    </div>
+  </div>
+  <a href="/users/<%= user.id %>/edit" class="btn btn-edit">编辑用户</a>
+  <a href="/users" class="btn btn-back">返回列表</a>
+</body>
+</html>

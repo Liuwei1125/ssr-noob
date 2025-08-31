@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>用户详情 - <%= user.name %></title>
+  <!-- 引入外部CSS样式 -->
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="card fade-in">
+      <div class="card-header">
+        <h1>用户详情</h1>
+      </div>
+      <div class="user-info">
+    <div class="info-item">
+      <span class="info-label">ID:</span>
+      <span class="info-value"><%= user.id %></span>
+    </div>
+    <div class="info-item">
+      <span class="info-label">姓名:</span>
+      <span class="info-value"><%= user.name %></span>
+    </div>
+    <div class="info-item">
+      <span class="info-label">年龄:</span>
+      <span class="info-value"><%= user.age %></span>
+    </div>
+    <div class="info-item">
+      <span class="info-label">邮箱:</span>
+      <span class="info-value"><%= user.email %></span>
+    </div>
+  </div>
+  <a href="/users/<%= user.id %>/edit" class="btn btn-primary">编辑用户</a>
+  <a href="/users" class="btn btn-secondary">返回列表</a>
+    </div>
+  </div>
+  
+  <!-- 引入JavaScript文件 -->
+  <script src="/js/main.js"></script>
+  <script>window.App.addSimpleAnimations();</script>
+</body>
+</html>

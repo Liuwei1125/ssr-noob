@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二进制Buffer vs 字符串 性能对比</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1, h2 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-bottom: 30px;
+        }
+        .principle {
+            background-color: #e8f4f8;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 0 4px 4px 0;
+        }
+        code {
+            background-color: #ecf0f1;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            color: #2c3e50;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h1>二进制Buffer vs 字符串 性能对比</h1>
+    <h2>不同响应方式和内容格式的性能分析</h2>
+
+    <div class="container">
+        <h3>性能优化原理说明</h3>
+        <div class="principle">
+            <h4>1. Pipe方式为什么更快？</h4>
+            <ul>
+                <li><strong>分块传输</strong>：Pipe方式允许数据分块传输，不需要一次性将所有数据加载到内存中</li>
+                <li><strong>背压控制</strong>：Node.js的流实现了背压（backpressure）机制，可以根据接收方的处理速度调整发送速度</li>
+                <li><strong>异步处理</strong>：流处理是异步的，不会阻塞事件循环</li>
+                <li><strong>内存效率</strong>：特别是对于大文件，流处理可以显著减少内存占用</li>
+            </ul>
+            
+            <h4>2. 二进制Buffer为什么比字符串快？</h4>
+            <ul>
+                <li><strong>减少转换开销</strong>：HTTP传输最终都是二进制的，字符串需要先转换为Buffer再传输</li>
+                <li><strong>更高效的内存表示</strong>：Buffer是原始二进制数据的高效表示</li>
+                <li><strong>避免字符编码转换</strong>：字符串在处理过程中可能涉及UTF-8等编码的转换</li>
+                <li><strong>直接操作底层数据</strong>：Buffer可以直接操作底层字节数据</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="container">
+        <h3>性能对比图表</h3>
+        <div class="chart-container">
+            <canvas id="performanceChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // 准备图表数据
+        const labels = ["10.0KB 字符串 Pipe", "10.0KB 字符串 End", "10.0KB 二进制 Pipe", "10.0KB 二进制 End", "100.0KB 字符串 Pipe", "100.0KB 字符串 End", "100.0KB 二进制 Pipe", "100.0KB 二进制 End", "500.0KB 字符串 Pipe", "500.0KB 字符串 End", "500.0KB 二进制 Pipe", "500.0KB 二进制 End"];
+        const dataValues = [0.30, 0.00, 0.10, 0.00, 0.10, 0.13, 0.00, 0.03, 0.67, 0.60, 0.03, 0.10];
+        const backgroundColor = ['rgba(255, 99, 132, 0.8)', 'rgba(255, 99, 132, 0.5)', 'rgba(54, 162, 235, 0.8)', 'rgba(54, 162, 235, 0.5)', 'rgba(255, 99, 132, 0.8)', 'rgba(255, 99, 132, 0.5)', 'rgba(54, 162, 235, 0.8)', 'rgba(54, 162, 235, 0.5)', 'rgba(255, 99, 132, 0.8)', 'rgba(255, 99, 132, 0.5)', 'rgba(54, 162, 235, 0.8)', 'rgba(54, 162, 235, 0.5)'];
+        
+        // 创建性能对比图表
+        const ctx = document.getElementById('performanceChart').getContext('2d');
+        const performanceChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '平均响应时间 (ms)',
+                    data: dataValues,
+                    backgroundColor: backgroundColor,
+                    borderColor: 'rgba(100, 100, 100, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: '响应时间 (毫秒)'
+                        }
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: '不同内容格式和响应方式的性能对比',
+                        font: {
+                            size: 16
+                        }
+                    },
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

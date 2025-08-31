@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>错误</title>
+  <!-- 引入外部CSS样式 -->
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="card fade-in" style="text-align: center;">
+      <div class="card-header">
+        <h1 class="alert-danger" style="color: #dc3545;">发生错误</h1>
+      </div>
+      <div style="padding: 20px;">
+        <div class="alert alert-danger" style="margin-bottom: 20px;">
+          <p><%= message %></p>
+        </div>
+        <a href="/users" class="btn btn-success">返回用户列表</a>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 引入JavaScript文件 -->
+  <script src="/js/main.js"></script>
+  <script>window.App.addSimpleAnimations();</script>
+</body>
+</html>

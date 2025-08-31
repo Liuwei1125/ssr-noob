@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSR与客户端水合演示</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+        }
+        .status-indicator {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .status-server-rendered {
+            background-color: #e8f4fd;
+            color: #2980b9;
+        }
+        .status-hydrated {
+            background-color: #e8f8f5;
+            color: #16a085;
+        }
+        .card {
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .highlight {
+            background-color: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .explanation {
+            background-color: #f8f9fa;
+            border-left: 4px solid #6c757d;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .data-section {
+            background-color: #f1f3f4;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .step {
+            margin: 25px 0;
+            padding-left: 20px;
+            border-left: 3px solid #3498db;
+        }
+        .console {
+            background-color: #2d3436;
+            color: #dfe6e9;
+            padding: 20px;
+            border-radius: 6px;
+            font-family: monospace;
+            margin: 20px 0;
+            height: 200px;
+            overflow-y: auto;
+        }
+        .console-line {
+            margin: 5px 0;
+        }
+        .console-log { color: #00b894; }
+        .console-info { color: #0984e3; }
+        .console-warning { color: #fdcb6e; }
+        .console-error { color: #d63031; }
+        .watermark {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: rgba(255,255,255,0.8);
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SSR (服务端渲染) 与客户端水合演示</h1>
+        
+        <div class="explanation">
+            <p>本演示直观展示了服务端渲染页面后，为什么仍需要将数据传递到客户端并执行水合过程。</p>
+            <p>请打开浏览器控制台 (F12) 查看详细的执行过程。</p>
+        </div>
+        
+        <!-- 1. 服务端渲染的内容 -->
+        <div class="step">
+            <h2>1. 服务端渲染的内容</h2>
+            <p>这部分HTML是由服务器预先渲染的，包含了用户可见的内容。</p>
+            <span class="status-indicator status-server-rendered">服务端渲染完成</span>
+            
+            <div id="app-container" class="card">
+                <h3>产品列表</h3>
+                <p>以下产品数据由服务端渲染：</p>
+                <ul id="product-list">
+                    <li>产品A - 价格: ¥100</li>
+                    <li>产品B - 价格: ¥200</li>
+                    <li>产品C - 价格: ¥300</li>
+                </ul>
+                <button id="add-product-btn">添加新产品</button>
+                <button id="refresh-data-btn">刷新数据</button>
+            </div>
+        </div>
+        
+        <!-- 2. 服务端传递的数据 -->
+        <div class="step">
+            <h2>2. 服务端传递的数据</h2>
+            <p>服务器通过 <span class="highlight">&lt;script&gt;</span> 标签将数据序列化并挂载到 <span class="highlight">window</span> 对象上。</p>
+            
+            <div class="data-section">
+                <p>window.__SERVER_DATA__ = {</p>
+                <p>  "products": [</p>
+                <p>    {"id": 1, "name": "产品A", "price": 100},</p>
+                <p>    {"id": 2, "name": "产品B", "price": 200},</p>
+                <p>    {"id": 3, "name": "产品C", "price": 300}</p>
+                <p>  ],</p>
+                <p>  "pageInfo": {"title": "产品列表", "renderTime": "2023-11-09T10:00:00Z"}</p>
+                <p>};</p>
+            </div>
+        </div>
+        
+        <!-- 3. 客户端水合过程 -->
+        <div class="step">
+            <h2>3. 客户端水合过程</h2>
+            <p>客户端JavaScript执行，<span id="hydration-status">正在等待水合...</span></p>
+            
+            <div class="console" id="console-output">
+                <div class="console-line console-info">[水合过程] 开始执行...</div>
+            </div>
+        </div>
+        
+        <!-- 4. 水合后的交互 -->
+        <div class="step">
+            <h2>4. 水合后的交互</h2>
+            <p>水合完成后，页面元素获得了交互能力。请尝试点击上方的按钮。</p>
+            <p id="interaction-result"></p>
+        </div>
+    </div>
+    
+    <!-- 模拟服务端注入的数据 -->
+    <script>
+        // 这部分代码模拟服务器在HTML渲染时注入的数据
+        window.__SERVER_DATA__ = {
+            products: [
+                {id: 1, name: "产品A", price: 100},
+                {id: 2, name: "产品B", price: 200},
+                {id: 3, name: "产品C", price: 300}
+            ],
+            pageInfo: {
+                title: "产品列表",
+                renderTime: new Date().toISOString()
+            }
+        };
+        
+        // 控制台日志工具函数
+        function logToConsole(type, message) {
+            const consoleOutput = document.getElementById('console-output');
+            const logLine = document.createElement('div');
+            logLine.className = `console-line console-${type}`;
+            logLine.textContent = `[${type.toUpperCase()}] ${message}`;
+            consoleOutput.appendChild(logLine);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+    </script>
+    
+    <!-- 客户端水合脚本 -->
+    <script>
+        // 等待DOM加载完成
+        document.addEventListener('DOMContentLoaded', function() {
+            logToConsole('info', 'DOM已加载完成，开始水合过程');
+            
+            // 1. 获取服务端传递的数据
+            logToConsole('info', '读取服务器传递的数据');
+            const serverData = window.__SERVER_DATA__;
+            
+            if (!serverData) {
+                logToConsole('error', '未找到服务器传递的数据！');
+                return;
+            }
+            
+            // 2. 验证DOM结构与数据的一致性
+            logToConsole('info', '验证DOM结构与数据的一致性');
+            const productList = document.getElementById('product-list');
+            const serverProductsCount = serverData.products.length;
+            const domProductsCount = productList.children.length;
+            
+            if (serverProductsCount === domProductsCount) {
+                logToConsole('log', `数据与DOM一致：${serverProductsCount}个产品`);
+            } else {
+                logToConsole('warning', `数据与DOM不一致：数据中有${serverProductsCount}个产品，但DOM中有${domProductsCount}个产品`);
+            }
+            
+            // 3. 绑定事件处理函数
+            logToConsole('info', '开始绑定事件处理函数');
+            
+            // 添加新产品按钮事件
+            const addProductBtn = document.getElementById('add-product-btn');
+            addProductBtn.addEventListener('click', function() {
+                const newProductId = serverData.products.length + 1;
+                const newProduct = {id: newProductId, name: `产品${String.fromCharCode(64 + newProductId)}`, price: newProductId * 100};
+                
+                // 更新数据
+                serverData.products.push(newProduct);
+                
+                // 更新视图
+                const newProductItem = document.createElement('li');
+                newProductItem.textContent = `${newProduct.name} - 价格: ¥${newProduct.price}`;
+                productList.appendChild(newProductItem);
+                
+                document.getElementById('interaction-result').textContent = `已添加新产品: ${newProduct.name}`;
+                logToConsole('log', `添加新产品: ${newProduct.name}`);
+            });
+            
+            // 刷新数据按钮事件
+            const refreshDataBtn = document.getElementById('refresh-data-btn');
+            refreshDataBtn.addEventListener('click', function() {
+                // 这里模拟从服务器重新获取数据
+                const refreshedTime = new Date().toISOString();
+                serverData.pageInfo.renderTime = refreshedTime;
+                
+                document.getElementById('interaction-result').textContent = `数据已刷新 (${refreshedTime})`;
+                logToConsole('log', `数据已刷新: ${refreshedTime}`);
+            });
+            
+            // 4. 水合完成，更新状态
+            logToConsole('info', '水合过程完成');
+            setTimeout(function() {
+                document.getElementById('hydration-status').innerHTML = 
+                    '<span class="status-indicator status-hydrated">水合完成</span>';
+                
+                logToConsole('log', '页面现在可以响应用户交互了！');
+                
+                // 添加水合完成的视觉提示
+                const watermark = document.createElement('div');
+                watermark.className = 'watermark';
+                watermark.textContent = '水合完成 ✓ 页面可交互';
+                document.body.appendChild(watermark);
+                
+                setTimeout(function() {
+                    watermark.style.opacity = '0';
+                    watermark.style.transition = 'opacity 1s ease';
+                }, 3000);
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

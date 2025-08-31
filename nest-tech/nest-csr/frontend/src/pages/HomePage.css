@@ -1,0 +1,99 @@
+/* 首页样式 */
+.home-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+/* 首页头部 */
+.home-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.home-header h1 {
+  font-size: 2.5rem;
+  color: #2c3e50;
+  margin-bottom: 16px;
+}
+
+.home-header p {
+  font-size: 1.1rem;
+  color: #6c757d;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* 特性网格 */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+}
+
+/* 特性卡片 */
+.feature-card {
+  background-color: white;
+  border-radius: 8px;
+  padding: 30px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+  text-align: center;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.feature-icon {
+  font-size: 3rem;
+  margin-bottom: 20px;
+}
+
+.feature-card h3 {
+  font-size: 1.5rem;
+  color: #2c3e50;
+  margin-bottom: 15px;
+}
+
+.feature-card p {
+  color: #6c757d;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+/* 特性链接 */
+.feature-link {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-weight: 500;
+  transition: background-color 0.3s;
+}
+
+.feature-link:hover {
+  background-color: #0056b3;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .home-header h1 {
+    font-size: 2rem;
+  }
+  
+  .home-header p {
+    font-size: 1rem;
+  }
+  
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .feature-card {
+    padding: 20px;
+  }
+}

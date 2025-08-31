@@ -1,0 +1,93 @@
+{
+  "timestamp": "2025-08-30T08:52:35.259Z",
+  "results": [
+    {
+      "responseType": "pipe",
+      "contentFormat": "string",
+      "avgResponseTime": 0.3,
+      "avgMemoryUsage": 0.033854166666666664,
+      "contentSize": 10.01953125
+    },
+    {
+      "responseType": "end",
+      "contentFormat": "string",
+      "avgResponseTime": 0,
+      "avgMemoryUsage": 0,
+      "contentSize": 10.01953125
+    },
+    {
+      "responseType": "pipe",
+      "contentFormat": "binary",
+      "avgResponseTime": 0.1,
+      "avgMemoryUsage": 0,
+      "contentSize": 10
+    },
+    {
+      "responseType": "end",
+      "contentFormat": "binary",
+      "avgResponseTime": 0,
+      "avgMemoryUsage": 0.0015625,
+      "contentSize": 10
+    },
+    {
+      "responseType": "pipe",
+      "contentFormat": "string",
+      "avgResponseTime": 0.1,
+      "avgMemoryUsage": 0.12552083333333333,
+      "contentSize": 100.0107421875
+    },
+    {
+      "responseType": "end",
+      "contentFormat": "string",
+      "avgResponseTime": 0.13333333333333333,
+      "avgMemoryUsage": 0.022395833333333334,
+      "contentSize": 100.0107421875
+    },
+    {
+      "responseType": "pipe",
+      "contentFormat": "binary",
+      "avgResponseTime": 0,
+      "avgMemoryUsage": 0.0005208333333333333,
+      "contentSize": 100
+    },
+    {
+      "responseType": "end",
+      "contentFormat": "binary",
+      "avgResponseTime": 0.03333333333333333,
+      "avgMemoryUsage": 0.0046875,
+      "contentSize": 100
+    },
+    {
+      "responseType": "pipe",
+      "contentFormat": "string",
+      "avgResponseTime": 0.6666666666666666,
+      "avgMemoryUsage": 0.38645833333333335,
+      "contentSize": 500.0009765625
+    },
+    {
+      "responseType": "end",
+      "contentFormat": "string",
+      "avgResponseTime": 0.6,
+      "avgMemoryUsage": 0.08697916666666666,
+      "contentSize": 500.0009765625
+    },
+    {
+      "responseType": "pipe",
+      "contentFormat": "binary",
+      "avgResponseTime": 0.03333333333333333,
+      "avgMemoryUsage": 0,
+      "contentSize": 500
+    },
+    {
+      "responseType": "end",
+      "contentFormat": "binary",
+      "avgResponseTime": 0.1,
+      "avgMemoryUsage": 0,
+      "contentSize": 500
+    }
+  ],
+  "conclusion": {
+    "pipeFasterReason": "Pipe方式更快的主要原因是它允许数据分块传输，减少了内存占用，特别是对于大文件。Node.js的流处理机制经过优化，可以更高效地处理数据传输。",
+    "binaryFasterReason": "二进制Buffer通常比字符串处理更快，因为字符串在传输前需要转换为Buffer，而二进制Buffer可以直接使用，减少了编码转换的开销。"
+  }
+}

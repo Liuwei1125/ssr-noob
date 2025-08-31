@@ -1,0 +1,111 @@
+/* 添加用户表单样式 */
+.add-user-form {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
+}
+
+.add-user-form h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #2c3e50;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+/* 表单组样式 */
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  color: #333;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+}
+
+.form-group input:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+/* 表单操作按钮 */
+.form-actions {
+  margin-top: 24px;
+}
+
+.form-actions button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.form-actions button:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.form-actions button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+/* 消息提示样式 */
+.error-message {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 10px 12px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  font-size: 0.875rem;
+  border: 1px solid #f5c6cb;
+}
+
+.success-message {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 10px 12px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  font-size: 0.875rem;
+  border: 1px solid #c3e6cb;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .add-user-form {
+    padding: 20px;
+  }
+  
+  .form-group input {
+    padding: 8px 10px;
+  }
+  
+  .form-actions button {
+    padding: 8px 16px;
+    width: 100%;
+  }
+}

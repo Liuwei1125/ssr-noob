@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>组件树共享与复用演示</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+        }
+        .highlight {
+            background-color: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .explanation {
+            background-color: #f8f9fa;
+            border-left: 4px solid #6c757d;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .section {
+            margin: 25px 0;
+            padding: 20px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+        .server-section {
+            background-color: #e8f4fd;
+            border-color: #3498db;
+        }
+        .client-section {
+            background-color: #e8f8f5;
+            border-color: #16a085;
+        }
+        .shared-section {
+            background-color: #fef9e7;
+            border-color: #f39c12;
+        }
+        .comparison {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .comparison-column {
+            flex: 1;
+            padding: 15px;
+            border-radius: 6px;
+            background-color: #f8f9fa;
+        }
+        .comparison-column h3 {
+            text-align: center;
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        pre {
+            background-color: #2d3436;
+            color: #dfe6e9;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 14px;
+        }
+        code {
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .code-comment {
+            color: #6c757d;
+        }
+        .code-keyword {
+            color: #64b5f6;
+        }
+        .code-string {
+            color: #81c784;
+        }
+        .code-function {
+            color: #ffb74d;
+        }
+        .card {
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .console {
+            background-color: #2d3436;
+            color: #dfe6e9;
+            padding: 20px;
+            border-radius: 6px;
+            font-family: monospace;
+            margin: 20px 0;
+            height: 150px;
+            overflow-y: auto;
+        }
+        .console-line {
+            margin: 5px 0;
+        }
+        .console-log { color: #00b894; }
+        .console-info { color: #0984e3; }
+        .console-warning { color: #fdcb6e; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>客户端与服务端共享组件树演示</h1>
+        
+        <div class="explanation">
+            <p>本演示展示了如何在客户端和服务端之间共享组件树定义，解决当前项目中组件树重复定义的问题。</p>
+            <p>通过共享组件定义，可以减少代码重复、提高维护性，并确保客户端和服务端渲染结果的一致性。</p>
+        </div>
+        
+        <!-- 1. 当前项目的问题 -->
+        <div class="section">
+            <h2>1. 当前项目存在的问题</h2>
+            
+            <div class="comparison">
+                <div class="comparison-column">
+                    <h3>服务端组件树 (<code>server.js</code>)</h3>
+                    <pre><span class="code-keyword">function</span> <span class="code-function">PageComponent</span>(props = {}) {
+  <span class="code-keyword">const</span> { pageType = 'ssr', ... } = props;
+  
+  <span class="code-keyword">if</span> (pageType === 'user-detail') {
+    <span class="code-keyword">return</span> {
+      type: 'div',
+      props: { id: 'app', ... },
+      children: [
+        <span class="code-comment">// 用户详情页内容</span>
+      ]
+    };
+  } <span class="code-keyword">else</span> <span class="code-keyword">if</span> (pageType === 'static') {
+    <span class="code-comment">// 静态页内容</span>
+  } <span class="code-keyword">else</span> {
+    <span class="code-comment">// 首页/SSR页面内容</span>
+  }
+}</pre>
+                </div>
+                
+                <div class="comparison-column">
+                    <h3>客户端组件树 (<code>client.js</code>)</h3>
+                    <pre><span class="code-keyword">function</span> <span class="code-function">createClientComponentTree</span>() {
+  <span class="code-keyword">const</span> pageProps = window.__PAGE_PROPS__ || {};
+  <span class="code-keyword">const</span> { pageType = 'ssr', ... } = pageProps;
+  
+  <span class="code-keyword">if</span> (pageType === 'user-detail') {
+    <span class="code-keyword">return</span> {
+      type: 'div',
+      props: { id: 'app', ... },
+      children: [
+        <span class="code-comment">// 几乎相同的用户详情页内容</span>
+      ]
+    };
+  } <span class="code-keyword">else</span> <span class="code-keyword">if</span> (pageType === 'static') {
+    <span class="code-comment">// 几乎相同的静态页内容</span>
+  } <span class="code-keyword">else</span> {
+    <span class="code-comment">// 几乎相同的首页/SSR页面内容</span>
+  }
+}</pre>
+                </div>
+            </div>
+            
+            <p>可以看到，两个函数的逻辑和结构几乎完全相同，但在不同的文件中重复定义，这会导致：</p>
+            <ul>
+                <li>代码重复，增加维护成本</li>
+                <li>如果修改一个地方，容易忘记修改另一个地方</li>
+                <li>可能导致客户端和服务端渲染不一致</li>
+            </ul>
+        </div>
+        
+        <!-- 2. 改进方案：共享组件定义 -->
+        <div class="section shared-section">
+            <h2>2. 改进方案：共享组件定义</h2>
+            
+            <p>在实际项目中，我们可以将组件树定义提取到共享模块中，让客户端和服务端都使用相同的定义：</p>
+            
+            <pre><span class="code-comment">// shared-components.js - 客户端和服务端共享的组件定义</span>
+<span class="code-keyword">export</span> <span class="code-keyword">function</span> <span class="code-function">createAppComponentTree</span>(props = {}, isServer = <span class="code-keyword">false</span>) {
+  <span class="code-keyword">const</span> { 
+    pageType = 'ssr',
+    dataSource = 'unknown',
+    currentTime = 'N/A',
+    users = [],
+    products = [],
+    user = null,
+    staticContent = {},
+    buildTime = 'N/A',
+    message = ''
+  } = props;
+  
+  <span class="code-comment">// 提供默认的mock数据，以防服务器未提供</span>
+  <span class="code-keyword">const</span> defaultUsers = [
+    { id: 1, name: '张三', age: 28 },
+    { id: 2, name: '李四', age: 32 },
+    { id: 3, name: '王五', age: 25 }
+  ];
+  <span class="code-keyword">const</span> displayUsers = users.length > 0 ? users : defaultUsers;
+  
+  <span class="code-comment">// 根据页面类型生成不同的组件树</span>
+  <span class="code-keyword">switch</span> (pageType) {
+    <span class="code-keyword">case</span> 'user-detail':
+      <span class="code-keyword">return</span> createUserDetailComponent(user, props, isServer);
+    <span class="code-keyword">case</span> 'static':
+      <span class="code-keyword">return</span> createStaticComponent(props, isServer);
+    <span class="code-keyword">default</span>:
+      <span class="code-keyword">return</span> createHomeComponent(displayUsers, props, isServer);
+  }
+}
+
+<span class="code-comment">// 用户详情页组件</span>
+<span class="code-keyword">function</span> <span class="code-function">createUserDetailComponent</span>(user, props, isServer) {
+  <span class="code-keyword">const</span> { dataSource, currentTime } = props;
+  
+  <span class="code-keyword">return</span> {
+    type: 'div',
+    props: {
+      id: 'app',
+      className: 'container',
+      onClick: isServer ? 'handleAppClick' : handleAppClick
+    },
+    children: [
+      `服务器渲染的用户详情页 (${dataSource})`,
+      { type: 'br' },
+      { type: 'br' },
+      { type: 'h1', props: { className: 'title' }, children: `用户详情 - ${user.name}` },
+      <span class="code-comment">// 更多内容...</span>
+    ]
+  };
+}
+
+<span class="code-comment">// 其他组件函数...</span></pre>
+        </div>
+        
+        <!-- 3. 演示实现 -->
+        <div class="section">
+            <h2>3. 演示实现</h2>
+            
+            <div class="card">
+                <h3>共享组件定义</h3>
+                <p>下方是一个简化的共享组件树实现，服务端和客户端都使用相同的组件定义：</p>
+                
+                <div id="shared-components-preview">
+                    <!-- 共享组件预览将在脚本中生成 -->
+                </div>
+            </div>
+            
+            <div class="comparison">
+                <div class="comparison-column server-section">
+                    <h3>服务端使用</h3>
+                    <pre><span class="code-comment">// server.js</span>
+<span class="code-keyword">const</span> { createAppComponentTree } = <span class="code-keyword">require</span>('./shared-components');
+
+<span class="code-keyword">function</span> <span class="code-function">renderPage</span>(props) {
+  <span class="code-comment">// 服务端调用，传入isServer=true</span>
+  <span class="code-keyword">const</span> componentTree = createAppComponentTree(props, <span class="code-keyword">true</span>);
+  
+  <span class="code-comment">// 渲染成HTML...</span>
+  <span class="code-keyword">const</span> html = renderToHTML(componentTree);
+  
+  <span class="code-comment">// 将props数据注入到HTML中...</span>
+  <span class="code-keyword">return</span> `
+    &lt;html&gt;
+      &lt;head&gt;...&lt;/head&gt;
+      &lt;body&gt;
+        ${html}
+        &lt;script&gt;window.__PAGE_PROPS__ = ${JSON.stringify(props)};&lt;/script&gt;
+      &lt;/body&gt;
+    &lt;/html&gt;
+  `;
+}</pre>
+                </div>
+                
+                <div class="comparison-column client-section">
+                    <h3>客户端使用</h3>
+                    <pre><span class="code-comment">// client.js</span>
+<span class="code-comment">// 客户端调用，传入isServer=false</span>
+<span class="code-keyword">const</span> pageProps = window.__PAGE_PROPS__ || {};
+<span class="code-keyword">const</span> componentTree = createAppComponentTree(pageProps, <span class="code-keyword">false</span>);
+
+<span class="code-comment">// 执行水合...</span>
+hydrate(document.getElementById('app'), componentTree);</pre>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 4. 互动演示 -->
+        <div class="section">
+            <h2>4. 互动演示</h2>
+            
+            <p>点击下方按钮查看共享组件树在客户端和服务端的实际表现：</p>
+            
+            <div class="comparison">
+                <div class="comparison-column server-section">
+                    <h3>服务端渲染结果</h3>
+                    <div id="server-rendered-content" class="card">
+                        服务器渲染的内容将在这里显示...
+                    </div>
+                </div>
+                
+                <div class="comparison-column client-section">
+                    <h3>客户端水合结果</h3>
+                    <div id="client-hydrated-content" class="card">
+                        客户端水合的内容将在这里显示...
+                    </div>
+                </div>
+            </div>
+            
+            <button id="render-button">渲染并水合组件</button>
+            <button id="change-props-button">修改Props重新渲染</button>
+            
+            <div class="console" id="demo-console">
+                <div class="console-line console-info">[演示] 准备就绪</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 模拟共享组件定义 -->
+    <script>
+        // 共享组件定义 - 同时适用于客户端和服务端
+        function createAppComponentTree(props = {}, isServer = false) {
+            const { 
+                pageType = 'ssr',
+                dataSource = 'unknown',
+                users = [],
+                title = '默认标题'
+            } = props;
+            
+            // 模拟客户端和服务端的事件处理函数差异
+            const onClickHandler = isServer ? 'handleContainerClick' : handleContainerClick;
+            const buttonClickHandler = isServer ? 'handleButtonClick' : handleButtonClick;
+            
+            // 组件树定义
+            return {
+                type: 'div',
+                props: {
+                    id: 'app',
+                    className: 'demo-app',
+                    onClick: onClickHandler,
+                    'data-rendered-by': isServer ? 'server' : 'client'
+                },
+                children: [
+                    {
+                        type: 'h2',
+                        props: { className: 'demo-title' },
+                        children: `${title} (${dataSource})`
+                    },
+                    {
+                        type: 'p',
+                        props: {},
+                        children: `渲染模式: ${isServer ? '服务端渲染' : '客户端水合'}`
+                    },
+                    {
+                        type: 'ul',
+                        props: { className: 'demo-list' },
+                        children: users.map((user, index) => ({
+                            type: 'li',
+                            props: {
+                                'data-user-id': user.id
+                            },
+                            children: `${user.name} - ${user.age}岁`
+                        }))
+                    },
+                    {
+                        type: 'button',
+                        props: {
+                            className: 'demo-button',
+                            onClick: buttonClickHandler
+                        },
+                        children: '点击我'
+                    }
+                ]
+            };
+        }
+        
+        // 模拟客户端事件处理函数
+        function handleContainerClick() {
+            logToConsole('log', '容器被点击了！（客户端事件）');
+        }
+        
+        function handleButtonClick() {
+            logToConsole('log', '按钮被点击了！（客户端事件）');
+        }
+        
+        // 模拟渲染为HTML的函数（服务端使用）
+        function renderToHTML(componentTree) {
+            if (typeof componentTree === 'string') {
+                return componentTree;
+            }
+            
+            const { type, props = {}, children = [] } = componentTree;
+            
+            // 构建属性字符串
+            const attributes = Object.entries(props)
+                .filter(([key]) => key !== 'children')
+                .map(([key, value]) => {
+                    if (key.startsWith('on')) {
+                        // 服务端只保存事件名称，不绑定实际函数
+                        return `data-event-${key.toLowerCase().slice(2)}="${value}"`;
+                    }
+                    return `${key}="${value}"`;
+                })
+                .join(' ');
+            
+            // 处理子节点
+            const childrenHTML = Array.isArray(children) ? 
+                children.map(child => renderToHTML(child)).join('') : 
+                renderToHTML(children);
+            
+            return `<${type} ${attributes}>${childrenHTML}</${type}>`;
+        }
+        
+        // 模拟水合函数（客户端使用）
+        function hydrate(element, componentTree) {
+            // 这里是简化版的水合实现
+            logToConsole('info', '开始水合组件...');
+            
+            // 绑定事件
+            if (componentTree.props && componentTree.props.onClick) {
+                element.addEventListener('click', componentTree.props.onClick);
+                logToConsole('log', '已绑定容器点击事件');
+            }
+            
+            // 处理子节点
+            if (Array.isArray(componentTree.children)) {
+                let childIndex = 0;
+                for (let i = 0; i < element.children.length; i++) {
+                    const childElement = element.children[i];
+                    const childComponent = componentTree.children[childIndex];
+                    
+                    // 跳过文本节点对应的子元素
+                    if (typeof childComponent === 'string') {
+                        childIndex++;
+                        continue;
+                    }
+                    
+                    if (childComponent && childComponent.type === childElement.tagName.toLowerCase()) {
+                        // 递归水合子元素
+                        hydrate(childElement, childComponent);
+                        childIndex++;
+                    }
+                }
+            }
+            
+            logToConsole('info', '水合完成！');
+        }
+        
+        // 控制台日志工具函数
+        function logToConsole(type, message) {
+            const consoleOutput = document.getElementById('demo-console');
+            const logLine = document.createElement('div');
+            logLine.className = `console-line console-${type}`;
+            logLine.textContent = `[${type.toUpperCase()}] ${message}`;
+            consoleOutput.appendChild(logLine);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+        
+        // 初始化演示
+        document.addEventListener('DOMContentLoaded', function() {
+            // 显示共享组件定义预览
+            const sharedComponentsPreview = document.getElementById('shared-components-preview');
+            
+            // 示例数据
+            let currentProps = {
+                pageType: 'ssr',
+                dataSource: 'server-api',
+                title: '共享组件树演示',
+                users: [
+                    { id: 1, name: '张三', age: 28 },
+                    { id: 2, name: '李四', age: 32 }
+                ]
+            };
+            
+            // 渲染按钮点击事件
+            document.getElementById('render-button').addEventListener('click', function() {
+                // 清空控制台
+                document.getElementById('demo-console').innerHTML = '';
+                
+                // 模拟服务端渲染
+                logToConsole('info', '服务端开始渲染...');
+                const serverComponentTree = createAppComponentTree(currentProps, true);
+                const serverHTML = renderToHTML(serverComponentTree);
+                document.getElementById('server-rendered-content').innerHTML = serverHTML;
+                logToConsole('info', '服务端渲染完成');
+                
+                // 模拟客户端水合
+                setTimeout(function() {
+                    logToConsole('info', '客户端开始水合...');
+                    
+                    // 复制服务端渲染的HTML到客户端容器
+                    const serverContent = document.getElementById('server-rendered-content').innerHTML;
+                    document.getElementById('client-hydrated-content').innerHTML = serverContent;
+                    
+                    // 创建客户端组件树并执行水合
+                    const clientComponentTree = createAppComponentTree(currentProps, false);
+                    const clientElement = document.getElementById('client-hydrated-content').querySelector('#app');
+                    hydrate(clientElement, clientComponentTree);
+                }, 1000);
+            });
+            
+            // 修改Props按钮点击事件
+            document.getElementById('change-props-button').addEventListener('click', function() {
+                // 修改Props
+                currentProps = {
+                    ...currentProps,
+                    title: '修改后的共享组件树',
+                    users: [
+                        { id: 1, name: '张三', age: 28 },
+                        { id: 2, name: '李四', age: 32 },
+                        { id: 3, name: '王五', age: 25 }
+                    ]
+                };
+                
+                logToConsole('warning', 'Props已修改，点击渲染按钮查看效果');
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>用户列表</title>
+  <!-- 引入外部CSS样式 -->
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <h1>用户列表</h1>
+  
+  <!-- 搜索框 -->
+  <div class="search-container">
+    <input type="text" id="userSearch" class="search-input" placeholder="搜索用户...">
+  </div>
+  
+  <!-- 批量操作 -->
+  <div class="bulk-actions">
+    <label><input type="checkbox" id="selectAll"> 全选</label>
+    <button id="deleteSelected" class="btn btn-danger" disabled>删除选中</button>
+  </div>
+  
+  <!-- 添加用户按钮 -->
+  <a href="/users/add" class="btn btn-success mb-20">添加新用户</a>
+  <table>
+    <thead>
+      <tr>
+        <th><input type="checkbox"></th>
+        <th class="sort-button" data-column="id" data-direction="asc">ID ▲</th>
+        <th class="sort-button" data-column="name" data-direction="asc">姓名 ▲</th>
+        <th class="sort-button" data-column="age" data-direction="asc">年龄 ▲</th>
+        <th class="sort-button" data-column="email" data-direction="asc">邮箱 ▲</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% users.forEach(function(user) { %>
+        <tr class="fade-in">
+          <td><input type="checkbox" value="<%= user.id %>"></td>
+          <td data-column="id"><%= user.id %></td>
+          <td data-column="name"><%= user.name %></td>
+          <td data-column="age"><%= user.age %></td>
+          <td data-column="email"><%= user.email %></td>
+          <td class="action-buttons">
+            <a href="/users/<%= user.id %>" class="btn btn-secondary">查看</a>
+            <a href="/users/<%= user.id %>/edit" class="btn btn-primary">编辑</a>
+            <form action="/users/<%= user.id %>/delete" method="POST" style="display: inline;">
+              <button type="submit" class="btn btn-danger delete-button" data-id="<%= user.id %>" data-name="<%= user.name %>">删除</button>
+            </form>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+  
+  <!-- 引入JavaScript文件 -->
+  <script src="/js/main.js"></script>
+  <script src="/js/user-list.js"></script>
+</body>
+</html>
